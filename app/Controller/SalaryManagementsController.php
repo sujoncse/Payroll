@@ -1831,7 +1831,7 @@ class SalaryManagementsController extends AppController {
                     'foreignKey' => 'employee_id',
                     'conditions' => array(),
                     'dependent' => true,
-                    "fields" => array("Employee.id", "Employee.first_name", "Employee.middle_name", "Employee.last_name", "Employee.employee_code", "Employee.type")
+                    "fields" => array("Employee.id","Employee.designation_id", "Employee.first_name", "Employee.middle_name", "Employee.last_name", "Employee.employee_code", "Employee.type")
         ))));
         $this->GeneratedSalary->bindModel(array('belongsTo' => array(
                 'EmployeePersonal' => array(
@@ -1846,12 +1846,15 @@ class SalaryManagementsController extends AppController {
                     'dependent' => true,
         ))));
         $salaries = $this->GeneratedSalary->find("all", array("conditions" => $conditions));
+		
 		/*$log = $this->GeneratedSalary->getDataSource()->getLog(false, false); debug($log);
         pr($salaries);*/
         $i = 0;
         $loans = NULL;
         $deputations = NULL;
         foreach ($salaries as $salary) {
+			$degig = $this->Designation->find("first", array("conditions" => "Designation.id = ". $salary['Employee']['designation_id']));
+			$salary['GeneratedSalary']['grade'] = $degig['Designation']['grade'];
             $temp = $this->PayScale->find("first", array("conditions" => "PayScale.grade =" . $salary["GeneratedSalary"]["grade"]));
             $salaries[$i]["PayScale"] = $temp["PayScale"];
             if ($salary["GeneratedDeduction"]["status"] == 1) {
@@ -4147,7 +4150,7 @@ class SalaryManagementsController extends AppController {
                     'foreignKey' => 'employee_id',
                     'conditions' => array(),
                     'dependent' => true,
-                    "fields" => array("Employee.id", "Employee.first_name", "Employee.middle_name", "Employee.last_name", "Employee.employee_code", "Employee.type")
+                    "fields" => array("Employee.id","Employee.designation_id", "Employee.first_name", "Employee.middle_name", "Employee.last_name", "Employee.employee_code", "Employee.type")
         ))));
         $this->GeneratedSalary->bindModel(array('belongsTo' => array(
                 'EmployeePersonal' => array(
@@ -4163,7 +4166,9 @@ class SalaryManagementsController extends AppController {
         ))));
         $salary = $this->GeneratedSalary->find("first", array("conditions" => "GeneratedSalary.id = $id"));
 		//$dect = $this->Deduction->find("first", array("conditions" => "Deduction.employee_id = ". $salary['GeneratedSalary']['employee_id']));
-		//pr($dect);	
+		$degig = $this->Designation->find("first", array("conditions" => "Designation.id = ". $salary['Employee']['designation_id']));
+		$salary['GeneratedSalary']['grade'] = $degig['Designation']['grade'];
+			
         $this->set("salary", $salary);
         //$this->set("deduction", $dect);
         if (!empty($salary)) {
